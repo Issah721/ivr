@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto bg-white p-8 border border-gray-200 shadow-sm rounded-lg mb-10">
+    <h1 class="text-2xl font-bold text-blue-700 mb-6">System Usability Scale (SUS)</h1>
+    <p class="mb-6 text-gray-700">Please answer the following 10 questions regarding your experience interacting with the IVR Medication Adherence system.</p>
+    
+    <form class="space-y-6">
+        {% set questions = [
+            "I think that I would like to use this system frequently.",
+            "I found the system unnecessarily complex.",
+            "I thought the system was easy to use.",
+            "I think that I would need the support of a technical person to be able to use this system.",
+            "I found the various functions in this system were well integrated.",
+            "I thought there was too much inconsistency in this system.",
+            "I would imagine that most people would learn to use this system very quickly.",
+            "I found the system very cumbersome to use.",
+            "I felt very confident using the system.",
+            "I needed to learn a lot of things before I could get going with this system."
+        ] %}
+        
+        {% for q in questions %}
+        <div class="p-4 bg-gray-50 rounded-md shadow-sm border border-gray-100">
+            <p class="font-medium mb-3 text-gray-800">{{ loop.index }}. {{ q }}</p>
+            <div class="flex flex-wrap gap-4 text-sm mt-2">
+                <label class="flex items-center space-x-1 cursor-pointer">
+                    <input type="radio" name="q{{ loop.index }}" value="1" required class="text-blue-600">
+                    <span class="text-gray-600">Strongly Disagree</span>
+                </label>
+                <label class="flex items-center space-x-1 cursor-pointer">
+                    <input type="radio" name="q{{ loop.index }}" value="2" class="text-blue-600">
+                    <span class="text-gray-600">Disagree</span>
+                </label>
+                <label class="flex items-center space-x-1 cursor-pointer">
+                    <input type="radio" name="q{{ loop.index }}" value="3" class="text-blue-600">
+                    <span class="text-gray-600">Neutral</span>
+                </label>
+                <label class="flex items-center space-x-1 cursor-pointer">
+                    <input type="radio" name="q{{ loop.index }}" value="4" class="text-blue-600">
+                    <span class="text-gray-600">Agree</span>
+                </label>
+                <label class="flex items-center space-x-1 cursor-pointer">
+                    <input type="radio" name="q{{ loop.index }}" value="5" class="text-blue-600">
+                    <span class="text-gray-600">Strongly Agree</span>
+                </label>
+            </div>
+        </div>
+        {% endfor %}
+        
+        <button type="button" onclick="alert('Submission recorded. Thank you for your feedback!')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 mt-4 shadow-sm">Submit SUS Feedback</button>
+    </form>
+</div>
+{% endblock %}

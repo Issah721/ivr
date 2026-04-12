@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
+
+    <!-- Upload Patient CSV -->
+    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+        <h2 class="text-xl font-bold mb-4 text-blue-700">Upload Patients (CSV)</h2>
+        <form hx-post="/dashboard/upload-csv" hx-encoding="multipart/form-data" hx-target="#upload-result" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">CSV File</label>
+                <input type="file" name="file" accept=".csv" class="mt-1 block w-full text-sm border border-gray-300 rounded-md shadow-sm p-1">
+                <p class="text-xs text-gray-500 mt-1">Required columns: phone, name, language, time_to_call, medication_name</p>
+            </div>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200">Upload CSV</button>
+        </form>
+        <div id="upload-result" class="mt-4"></div>
+    </div>
+    
+    <!-- Today's Calls -->
+    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+        <h2 class="text-xl font-bold mb-4 text-blue-700">Today's IVR Calls</h2>
+        <div class="overflow-y-auto max-h-64">
+            <table class="min-w-full text-left bg-white border-collapse">
+                <thead>
+                    <tr class="bg-gray-100 text-gray-600 border-b">
+                        <th class="py-2 px-3">Time</th>
+                        <th class="py-2 px-3">Patient</th>
+                        <th class="py-2 px-3">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for call in todays_calls %}
+                    <tr class="hover:bg-gray-50 border-b border-gray-50">
+                        <td class="py-2 px-3">{{ call.timestamp.strftime('%H:%M:%S') }}</td>
+                        <td class="py-2 px-3 font-medium">{{ call.patient.name }}</td>
+                        <td class="py-2 px-3">
+                            {% if call.call_status == 'Completed' %}
+                            <span class="text-green-600">{{ call.call_status }}</span>
+                            {% elif call.call_status in ['Failed', 'Rejected', 'Busy', 'NoAnswer'] %}
+                            <span class="text-red-500">{{ call.call_status }}</span>
+                            {% else %}
+                            <span class="text-gray-600">{{ call.call_status }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="3" class="py-4 text-center text-gray-500">No calls dispatched today.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Patient List -->
+    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+        <h2 class="text-xl font-bold mb-4 text-blue-700">Registered Patients</h2>
+        <div class="overflow-y-auto max-h-96">
+            <table class="min-w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-100 text-gray-600 border-b">
+                        <th class="py-2 px-3">Name</th>
+                        <th class="py-2 px-3">Phone Number</th>
+                        <th class="py-2 px-3">Language</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for patient in patients %}
+                    <tr class="hover:bg-gray-50 border-b border-gray-50">
+                        <td class="py-2 px-3 font-medium text-gray-800">{{ patient.name }}</td>
+                        <td class="py-2 px-3 text-gray-600">{{ patient.phone_number }}</td>
+                        <td class="py-2 px-3 text-gray-500">{{ patient.language }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="3" class="py-4 text-center text-gray-500">Database is empty.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Adherence Report Table -->
+    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-blue-700">Full Adherence Logs</h2>
+            <a href="/export/adherence" target="_blank" class="text-sm bg-green-600 hover:bg-green-700 text-white font-bold py-1.5 px-3 rounded shadow transition-colors duration-200">Export CSV</a>
+        </div>
+        <div class="overflow-y-auto max-h-96">
+            <table class="min-w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-100 text-gray-600 border-b">
+                        <th class="py-2 px-3 text-xs">Date</th>
+                        <th class="py-2 px-3 text-xs">Patient Name</th>
+                        <th class="py-2 px-3 text-xs">Pill Taken?</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in all_logs %}
+                    <tr class="hover:bg-gray-50 text-sm border-b border-gray-50">
+                        <td class="py-2 px-3 text-gray-600">{{ log.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td class="py-2 px-3 font-medium text-gray-800">{{ log.patient.name }}</td>
+                        <td class="py-2 px-3">
+                            {% if log.adherence_status == 'taken' %}
+                            <span class="text-green-600 font-semibold bg-green-50 px-2 py-0.5 rounded">Yes</span>
+                            {% elif log.adherence_status == 'not_taken' %}
+                            <span class="text-red-600 font-semibold bg-red-50 px-2 py-0.5 rounded">No</span>
+                            {% elif log.adherence_status == 'side_effects' %}
+                            <span class="text-yellow-600 font-semibold bg-yellow-50 px-2 py-0.5 rounded">Side Effects</span>
+                            {% else %}
+                            <span class="text-gray-400 bg-gray-50 px-2 py-0.5 rounded">Missed/Unknown</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="3" class="py-4 text-center text-gray-500">No log entries found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
